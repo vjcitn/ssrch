@@ -1,0 +1,98 @@
+---
+title: "ssrch: selectize-based search engine for corpora of modest size"
+author: "Vincent J. Carey, stvjc at channing.harvard.edu"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{ssrch: small search engine}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document:
+    highlight: pygments
+    number_sections: yes
+    theme: united
+    toc: yes
+---
+
+```{r setup,echo=FALSE,results="hide"}
+suppressPackageStartupMessages({
+library(ssrch)
+})
+```
+
+# Introduction
+
+Metadata are crucial to all forms of statistical analysis.
+Metadata are used to define formal steps of
+upstream data preprocessing, to annotate outcomes and covariates,
+and to interpret inferential results.
+
+The ssrch package was developed to provide a lightweight
+approach to searching a metadata corpus with R.  There are three
+basic steps:
+
+- tokenize corpus elements syntactically,
+- filter tokens into hashed environments,
+- use selectize.js to achieve a predictive, autocompleted search interface.
+
+We illustrate the system using a collection of tables of metadata
+about cancer transcriptomics.
+
+# Illustration
+
+To provide a sense of what is at stake, we work with 68 CSV files
+derived from the NCBI Sequence Read Archive metadata.  
+The files consist of contents of the `sample.attribute` subtable of study metadata
+retrieved using the SRAdbV2 package at github.com:seandavi/SRAdbV2.
+The CSV files
+are lodged with the `ssrch` package in `inst/cancer_corpus`.
+
+## Diversity of field names
+
+There is partial standardization of field names in this corpus,
+but there is considerable variation among studies in the number
+and types of fields used.
+```{r lkrec}
+dd = dir(system.file("cancer_corpus", 
+   package="ssrch"), full=TRUE, patt="csv$")
+allc = lapply(dd, function(x) try(read.csv(x, stringsAsFactors=FALSE)))
+summary(sapply(allc,ncol))
+lapply(allc[c(11,55)], names)
+```
+
+The `ssrch` package provides
+tools for identifying studies in which a given
+field is used, and in which given values are recorded.
+
+A motivating example is determining what studies involve
+measurements on normal tissue adjacent to tumor.  In
+our collection, this can be assessed via:
+```{r lklk}
+library(ssrch)
+data(cancer68docs)
+searchStudies("Adjacent", cancer68docs, ignore.case=TRUE)
+```
+
+
+## Managing tokenized metadata
+
+Before getting into the details of search engine
+construction, we review some high-level concepts and methods.
+
+First, we have a container for managing our search resource.
+```{r lkd1}
+cancer68docs
+```
+`cancer68docs` is the result of using the `ssrch` function `csv2envs`
+in conjunction with the CSV files in `ssrch/inst/cancer_corpus`. 
+It is an S4 class instance that manages four environments mapping
+from keywords to studies, keywords to experiments, studies to keywords,
+and experiments to keywords.  (More generically, we would say we have
+a simple two-level hierarchy of records within documents.)
+
+We'll search for the phrase `Non Small Cell` with an optional hyphen,
+ignoring case of possible hits.
+```{r try}
+SChits = searchStudies("Non.Small Cell", cancer68docs, ignore.case=TRUE)
+SChits
+```
