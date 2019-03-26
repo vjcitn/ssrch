@@ -20,20 +20,26 @@ ctxsearch = function() {
  titles = ssrch::docset_cancer68@titles
  allkw = sort(unique(ls(envir=kw2docs(docs))))
  accumtitles = NULL
+ accumTokens = NULL
  ui = fluidPage(
   sidebarLayout(
    sidebarPanel(
     helpText(h3("ssrch")),
     helpText("simple metadata search engine"),
-    verbatimTextOutput("objdesc"),
     selectInput("main", "search studies for",
-     choices = allkw, selected="Triple"), width=3
+     choices = allkw, selected="Triple"), 
+    uiOutput("newnew"),
+    downloadButton("downloadData", "download list of data.frames"),
+           width=3
     ),
    mainPanel(
     helpText("tabs will appear for studies using selected terms in metadata"),
     tabsetPanel(id="tabs",
-     tabPanel("titles",
-      dataTableOutput("dat")
+     tabPanel("titles", target="titles",
+      dataTableOutput("titleTable")
+     ),
+     tabPanel("about",
+      verbatimTextOutput("objdesc")
      )
     )
    )
@@ -42,11 +48,17 @@ ctxsearch = function() {
 
  server = function(input, output) {
   output$objdesc = renderPrint( docs )
+#
+# retrieve requested documents
+#
   getTabs = reactive({
     z = searchDocs(input$main, docs, ignore.case=TRUE)
     lapply(z$docs, function(x) retrieve_doc(x, docs))
     })
-  output$dat = renderDataTable({
+#
+# render a table of titles of selected documents
+#
+  output$titleTable = renderDataTable({
    z = searchDocs(input$main, docs, ignore.case=TRUE)
    if (nrow(z)>1 && sum(dd <- duplicated(z$docs))>0) {
       sz = split(z, z$docs)
@@ -56,14 +68,36 @@ ctxsearch = function() {
       }
    if (is.null(accumtitles)) accumtitles <<- cbind(z, title=titles[z$docs])
    else accumtitles <<- rbind(accumtitles, cbind(z, title=titles[z$docs]))
+   d = which(duplicated(accumtitles$docs))
+   if (length(d)>0) accumtitles <<- accumtitles[-d,]
    accumtitles
   })
+#
+# append tabs as requested
+#
   observeEvent(input$main, {
     z = searchDocs(input$main, docs, ignore.case=TRUE)
     lapply(unique(z$docs), function(x) {
-      appendTab("tabs", tabPanel(x, {
-        renderDataTable(retrieve_doc(x, docs))}))})
+      insertTab("tabs", tabPanel(x, {
+        renderDataTable(retrieve_doc(x, docs))}),target="titles", position="after")})
     })
+
+  observeEvent(input$main, {
+    accumTokens <<- c(accumTokens, accumtitles$docs)
+    output$newnew = renderUI(selectInput("keep", "keep",
+        choices=accumTokens, selected=accumTokens, multiple=TRUE))
+    })
+
+     output$downloadData <- downloadHandler(
+              filename = function() {
+                paste('listOfDFs-', Sys.Date(), '.rds', sep='')
+                },  
+              content = function(con) {
+                ans = lapply(input$keep, function(x) retrieve_doc(x, docs))
+                saveRDS(ans, file=con)
+                }, contentType="application/octet-stream"
+               )    
+
  }
  runApp(list(ui=ui, server=server))
 }
