@@ -6,7 +6,10 @@
 \alias{expt2kw}
 \alias{stud2kw}
 \alias{searchStudies}
+\alias{retrieve_doc}
 \alias{retrieveStudies}
+\alias{retrieveExpts}
+\alias{searchExpts}
 \title{utilities for ssrch}
 \usage{
 kw2stud(sdata)
@@ -19,7 +22,13 @@ stud2kw(sdata)
 
 searchStudies(string, obj, ...)
 
+retrieve_doc(x, obj, ...)
+
 retrieveStudies(keys, obj)
+
+retrieveExpts(keys, obj)
+
+searchExpts(string, obj, ...)
 }
 \arguments{
 \item{sdata}{instance of srchData class}
