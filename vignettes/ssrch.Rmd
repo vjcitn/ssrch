@@ -128,3 +128,17 @@ datatable(NSCdocs[[2]], options=list(lengthMenu=c(3,5,10)))
 datatable(NSCdocs[[3]], options=list(lengthMenu=c(3,5,10)))
 ```
 
+# A prototypical app
+
+The `ctxsearch` function starts a shiny app that
+provides access to full attribute data via a selectize
+input that uses all tokens in the corpus (filtered).
+
+![ctxsearch illustration](ssrchapp.png)
+
+# Further work
+
+The tab set should be prunable.
+
+This will be the basis of an interactive interface to the
+human transcriptome compendium
