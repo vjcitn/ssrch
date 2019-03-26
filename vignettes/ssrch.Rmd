@@ -120,9 +120,9 @@ We can use `retrieve_doc` to look at the contents
 of the metadata tables for these studies.
 
 ```{r lkdocs}
-NSCdocs = lapply(unique(NSChits$studies), 
+NSCdocs = lapply(unique(NSChits$docs), 
    function(x) retrieve_doc(x, docset_cancer68))
-names(NSCdocs) = NSChits$studies
+names(NSCdocs) = NSChits$docs
 datatable(NSCdocs[[1]], options=list(lengthMenu=c(3,5,10)))
 datatable(NSCdocs[[2]], options=list(lengthMenu=c(3,5,10)))
 datatable(NSCdocs[[3]], options=list(lengthMenu=c(3,5,10)))

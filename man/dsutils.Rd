@@ -26,9 +26,27 @@ retrieve_doc(x, obj, ...)
 \item{string}{character(1) query string}
 
 \item{obj}{instance of DocSet class}
+
+\item{\dots}{passed to base::grep}
+
+\item{x}{character(1) document identifier}
+}
+\value{
+an environment
+
+an environment
+
+an environment
+
+a data.frame with tokens queried (hits) and associated document ids (docs)
+
+result of calling obj@doc_retriever on arguments x, ...
 }
 \description{
 Container for simple documents with arbitrary numbers/shapes of records
 
 utilities for ssrch
+}
+\examples{
+getClass("DocSet")
 }

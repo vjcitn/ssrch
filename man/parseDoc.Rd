@@ -13,6 +13,9 @@ parseDoc(csv, DocSetInstance = NULL,
 \arguments{
 \item{csv}{a character(1) CSV file path}
 
+\item{DocSetInstance}{if NULL, DocSet is initialized in this
+function, otherwise the instance is updated with new content}
+
 \item{rec_id_field}{character(1) field in CSV identifying records}
 
 \item{exclude_fields}{character vector of fields to ignore while parsing}
@@ -21,6 +24,17 @@ parseDoc(csv, DocSetInstance = NULL,
 
 \item{cleanFields}{list of regular expressions identifying fields to ignre}
 }
+\value{
+instance of DocSet
+}
 \description{
 parse a document and place content in a DocSet
+}
+\examples{
+myob = ssrch::docset_cancer68
+td = tempdir()
+alld = ls(docs2kw(myob))
+r1 = retrieve_doc(alld[1], myob)
+expo = write.csv(r1, paste0(td, "/expo.csv"))
+parseDoc(paste0(td, "/expo.csv"), title=ssrch::titles68[alld[1]])
 }

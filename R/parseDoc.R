@@ -1,9 +1,19 @@
 #' parse a document and place content in a DocSet
 #' @param csv a character(1) CSV file path
+#' @param DocSetInstance if NULL, DocSet is initialized in this
+#' function, otherwise the instance is updated with new content
 #' @param rec_id_field character(1) field in CSV identifying records
 #' @param exclude_fields character vector of fields to ignore while parsing
 #' @param title character(1) document title
 #' @param cleanFields list of regular expressions identifying fields to ignre
+#' @return instance of DocSet
+#' @examples
+#' myob = ssrch::docset_cancer68
+#' td = tempdir()
+#' alld = ls(docs2kw(myob))
+#' r1 = retrieve_doc(alld[1], myob)
+#' expo = write.csv(r1, paste0(td, "/expo.csv"))
+#' parseDoc(paste0(td, "/expo.csv"), title=ssrch::titles68[alld[1]])
 #' @export
 parseDoc = function(csv, DocSetInstance=NULL, 
     rec_id_field = "experiment.accession",
@@ -21,8 +31,10 @@ stopifnot(length(csv)==1, is.atomic(csv))
       kw2docs = new.env(hash=TRUE),
       docs2recs = new.env(hash=TRUE),
       docs2kw = new.env(hash=TRUE),
+      titles=title,
       doc_retriever = function() NULL)
-   }
+   }  # or start by augmenting title set
+   else DocSetInstance@titles = c(DocSetInstance@titles, title)
 #
 # import CSV check that rec_id_field is present
 #
