@@ -1,2 +1,1 @@
-# ssrch
-simple search engine for corpora of modest size
+vignettes/ssrch.Rmd
