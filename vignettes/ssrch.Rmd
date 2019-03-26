@@ -45,7 +45,22 @@ derived from the NCBI Sequence Read Archive metadata.
 The files consist of contents of the `sample.attribute` subtable of study metadata
 retrieved using the SRAdbV2 package at github.com:seandavi/SRAdbV2.
 The CSV files
-are lodged with the `ssrch` package in `inst/cancer_corpus`.
+are lodged in a zip file
+`canc68.zip` with the `ssrch` package in `inst/cancer_corpus`.
+
+The CSV files have been indexed in an S4 object of class
+`DocSet`.
+
+```{r lkds}
+data(docset_cancer68)
+docset_cancer68
+```
+
+A single document can be retrieved with the `retrieve_doc`
+function, given the study accession number.
+```{r lklkaa}
+retrieve_doc("ERP010142", docset_cancer68)[1:3,1:5]
+```
 
 ## Diversity of field names
 
@@ -53,9 +68,9 @@ There is partial standardization of field names in this corpus,
 but there is considerable variation among studies in the number
 and types of fields used.
 ```{r lkrec}
-dd = dir(system.file("cancer_corpus", 
-   package="ssrch"), full=TRUE, patt="csv$")
-allc = lapply(dd, function(x) try(read.csv(x, stringsAsFactors=FALSE)))
+docids = ls(envir=docs2kw(docset_cancer68))
+allc = lapply(docids, 
+   function(x) try(retrieve_doc(x, docset_cancer68)))
 summary(sapply(allc,ncol))
 lapply(allc[c(11,55)], names)
 ```
@@ -69,8 +84,7 @@ measurements on normal tissue adjacent to tumor.  In
 our collection, this can be assessed via:
 ```{r lklk}
 library(ssrch)
-data(cancer68docs)
-searchStudies("Adjacent", cancer68docs, ignore.case=TRUE)
+searchDocs("Adjacent", docset_cancer68, ignore.case=TRUE)
 ```
 
 
@@ -79,20 +93,37 @@ searchStudies("Adjacent", cancer68docs, ignore.case=TRUE)
 Before getting into the details of search engine
 construction, we review some high-level concepts and methods.
 
-First, we have a container for managing our search resource.
+First, we have the container for managing our search resource.
 ```{r lkd1}
-cancer68docs
+getClass(class(docset_cancer68))
 ```
-`cancer68docs` is the result of using the `ssrch` function `csv2envs`
-in conjunction with the CSV files in `ssrch/inst/cancer_corpus`. 
-It is an S4 class instance that manages four environments mapping
-from keywords to studies, keywords to experiments, studies to keywords,
-and experiments to keywords.  (More generically, we would say we have
-a simple two-level hierarchy of records within documents.)
+`docset_cancer68` is the result of using the `ssrch` function `parseDoc`
+in conjunction with the CSV files zipped in `ssrch/inst/cancer_corpus`. 
+It is an S4 class instance that manages environments mapping
+from keywords to documents, documents to records, documents to keywords,
+
+Furthermore, `DocSet` instances can have a component that
+retrieves parsed documents from the corpus.  
+
+## Querying the corpus
 
 We'll search for the phrase `Non Small Cell` with an optional hyphen,
-ignoring case of possible hits.
+ignoring character case of possible hits, including as well
+the abbreviation for Non-small cell lung cancer.
 ```{r try}
-SChits = searchStudies("Non.Small Cell", cancer68docs, ignore.case=TRUE)
-SChits
+NSChits = searchDocs("Non.Small Cell|NSCLC$", docset_cancer68, ignore.case=TRUE)
+NSChits
 ```
+Three studies, three different patterns matched by the query string.
+We can use `retrieve_doc` to look at the contents
+of the metadata tables for these studies.
+
+```{r lkdocs}
+NSCdocs = lapply(unique(NSChits$studies), 
+   function(x) retrieve_doc(x, docset_cancer68))
+names(NSCdocs) = NSChits$studies
+datatable(NSCdocs[[1]], options=list(lengthMenu=c(3,5,10)))
+datatable(NSCdocs[[2]], options=list(lengthMenu=c(3,5,10)))
+datatable(NSCdocs[[3]], options=list(lengthMenu=c(3,5,10)))
+```
+
