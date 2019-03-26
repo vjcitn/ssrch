@@ -3,7 +3,7 @@ Title: a simple search engine
 Description: Demonstrate tokenization and a search gadget for collections of CSV files.
 Version: 0.0.3
 Author: Vince Carey
-Suggests: knitr
+Suggests: knitr, DT
 Depends: R (>= 3.5)
 Maintainer: VJ Carey <stvjc@channing.harvard.edu>
 License: Artistic-2.0
