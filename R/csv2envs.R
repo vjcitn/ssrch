@@ -16,11 +16,16 @@ stud2kw = function(sdata) slot(sdata, "studenv")
 #' @export
 searchStudies = function(string, obj, ...)
  {
- hits = grep(string, ls(kw2stud(obj)), value=TRUE, ...)
+ hits = grep(string, ls(envir=kw2stud(obj)), value=TRUE, ...)
  z = mget(hits, kw2stud(obj))
  l = vapply(z, length, integer(1))
  hits = rep(hits, l)
  data.frame(hits=hits, studies=unlist(z), stringsAsFactors=FALSE, row.names=NULL)
+ }
+#' @rdname ssutils
+#' @export
+retrieve_doc = function(x, obj, ...) {
+ slot(obj, "doc_retriever")(x, ...)
 }
 #' @rdname ssutils
 #' @export
@@ -39,7 +44,8 @@ searchExpts = function(string, obj, ...)
 #' class to manage environments for ssrch engine
 #' @export
 setClass("srchData", representation(expenv="environment",
- studenv="environment", kwstenv="environment", kwexenv="environment"))
+ studenv="environment", kwstenv="environment", kwexenv="environment",
+ doc_retriever="function"))
 setMethod("show", "srchData", function(object) {
  cat("ssrch engine resource:\n")
  cat(sprintf(" %d studies, %d experiments\n", length(unique(ls(object@studenv))), length(unique(ls(object@expenv)))))

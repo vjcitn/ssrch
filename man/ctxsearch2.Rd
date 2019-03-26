@@ -21,7 +21,7 @@ written.
 if (interactive()) {
   oask = options()$example.ask
   options(example.ask=FALSE)
-  try(ctxsearch())
+  try(ctxsearch2())
   options(example.ask=oask)
 }
 }

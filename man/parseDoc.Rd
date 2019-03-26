@@ -7,7 +7,8 @@
 parseDoc(csv, DocSetInstance = NULL,
   rec_id_field = "experiment.accession",
   exclude_fields = c("study.accession"), title = NA_character_,
-  cleanFields = list(".*id$", ".name$", "_name$"))
+  cleanFields = list("..*id$", ".name$", "_name$", "checksum", "isolate",
+  "filename", "^ID$", "barcode", "Sample.Name"))
 }
 \arguments{
 \item{csv}{a character(1) CSV file path}

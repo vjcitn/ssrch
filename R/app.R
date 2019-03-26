@@ -26,7 +26,7 @@ retrieval."),
 #     actionButton("btnSend", "Stop app")
      ),
    mainPanel(
-    tabsetPanel(
+    tabsetPanel(id = "tabs",
      tabPanel("basics",
       helpText(h4("Studies in cart")),
       tableOutput("b"),
@@ -89,6 +89,9 @@ z
                  showNotification(paste0("keyword hits studies ", paste(unlist(targs), collapse=", "), "; using first"), type="message")
                  }
               targ = targs[[1]][1]
+              for (i in 1:length(targs[[1]]))
+                  appendTab(inputId="tabs", tab=
+                    tabPanel(targs[[1]][i], helpText("a")))
               z = read.csv(system.file(paste0("cancer_corpus/", targ,".csv"), package="ssrch"), stringsAsFactors=FALSE)
               z })
 #     observe({
