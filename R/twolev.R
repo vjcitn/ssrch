@@ -18,6 +18,9 @@ setClass("DocSet", representation(
 #' @param titles a named character vector with titles; names are document identifiers
 #' @param doc_retriever a function that, given a document identifier, will produce the document
 #' @return instance of DocSet
+#' @note Titles must be bound in post-hoc.  parseDoc produces
+#' data including parsed titles but does not bind the title into
+#' the resulting object.  
 #' @examples
 #' getClass("DocSet")
 #' @export

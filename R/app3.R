@@ -18,35 +18,58 @@
 ctxsearch = function() {
  docs = ssrch::docset_cancer68
  titles = ssrch::docset_cancer68@titles
+#
+# order keywords so that those with alphabetic prefix
+# precede those with special characters or numbers
+#
  allkw = sort(unique(ls(envir=kw2docs(docs))))
+ ini = substr(allkw,1,1)
+ fullinds = seq_len(length(allkw))
+ preferred = grep("[A-Za-z]", ini)
+ spec = setdiff(fullinds, preferred)
+ allkw = allkw[c(preferred, spec)]
+#
+# done
+#
  accumtitles = NULL
  accumTokens = NULL
  ui = fluidPage(
   sidebarLayout(
    sidebarPanel(
     helpText(h3("ssrch")),
-    helpText("simple metadata search engine"),
-    selectInput("main", "search studies for",
-     choices = allkw, selected="Triple"), 
-    uiOutput("newnew"),
-    downloadButton("downloadData", "download list of data.frames"),
+    helpText("Simple full text search over genomic metadata"),
+    selectInput("main", "Search studies for",
+     choices = allkw, selected="Triple"),
+    selectInput("keep", "Select study accession numbers for metadata retrieval",
+        choices=names(titles), multiple=TRUE),
+    downloadButton("downloadData", "download list of data.frames associated with studies in the box above."),
+    actionButton("cleartabs", "clear tabs"),
+    actionButton("cleartitles", "clear titles"),
            width=3
     ),
    mainPanel(
-    helpText("tabs will appear for studies using selected terms in metadata"),
+    helpText("Tabs will appear for studies using selected terms in metadata"),
+    helpText("Click on tab to see sample.attributes for all experiments in the study, derived with SRAdbV2"),
     tabsetPanel(id="tabs",
      tabPanel("titles", target="titles",
       dataTableOutput("titleTable")
      ),
      tabPanel("about",
-      verbatimTextOutput("objdesc")
+      helpText("This app demonstrates an approach to supporting full text search over genomic metadata recorded in the NCBI SRA."),
+      helpText("A snapshot of cancer-related metadata was retrieved
+in March 2019 using the Omicidx system of Sean Davis of NCI."),
+      helpText("ssrch::ctxsearch uses a convenience subsample of the cancer-related metadata.  The subsample was indexed in a DocSet structure available as ssrch::docset_cancer68.  A view of this object is shown below."),
+      verbatimTextOutput("objdesc"),
+      helpText("Special methods for organizing and searching the metadata are warranted by the fact that diverse field sets and value sets are used across and even within studies.  Retrieval and partial normalization of metadata from SRAdbV2 is conducted using code in the HumanTranscriptomeCompendium package, available at github.com/vjcitn."),
+      helpText("The software stack underlying ssrch is:"),
+      verbatimTextOutput("sessInf")
      )
     )
    )
   )
  )
 
- server = function(input, output) {
+ server = function(input, output, session) {
   output$objdesc = renderPrint( docs )
 #
 # retrieve requested documents
@@ -58,7 +81,8 @@ ctxsearch = function() {
 #
 # render a table of titles of selected documents
 #
-  output$titleTable = renderDataTable({
+#  output$titleTable = renderDataTable({
+  buildTitleTable = reactive({
    z = searchDocs(input$main, docs, ignore.case=TRUE)
    if (nrow(z)>1 && sum(dd <- duplicated(z$docs))>0) {
       sz = split(z, z$docs)
@@ -73,20 +97,34 @@ ctxsearch = function() {
    accumtitles
   })
 #
-# append tabs as requested
+# append titles, tabs as requested
 #
+  tabStack = NULL
   observeEvent(input$main, {
+    output$titleTable = renderDataTable( buildTitleTable() )
     z = searchDocs(input$main, docs, ignore.case=TRUE)
-    lapply(unique(z$docs), function(x) {
+    lapply(rev(unique(z$docs)), function(x) {
+      tabStack <<- c(tabStack, x)
       insertTab("tabs", tabPanel(x, {
-        renderDataTable(retrieve_doc(x, docs))}),target="titles", position="after")})
+        renderDataTable(retrieve_doc(x, docs))}, id=x),
+        target="titles", position="after")})
+    accumTokens <<- c(accumTokens, accumtitles$docs)
+    })
+  observeEvent(input$cleartabs, {
+    for (i in tabStack) removeTab("tabs", target=i) 
+    tabStack <<- NULL
+    })
+  observeEvent(input$cleartitles, {
+    accumtitles <<- NULL
+    output$titleTable = renderDataTable( data.frame() ) #buildTitleTable() )
     })
 
-  observeEvent(input$main, {
-    accumTokens <<- c(accumTokens, accumtitles$docs)
-    output$newnew = renderUI(selectInput("keep", "keep",
-        choices=accumTokens, selected=accumTokens, multiple=TRUE))
-    })
+#  observeEvent(input$main, {
+#    accumTokens <<- c(accumTokens, accumtitles$docs)
+#    output$newnew = renderUI(selectInput("keep", "keep",
+#        choices=accumTokens, selected=accumTokens, multiple=TRUE))
+#    })
+     output$sessInf = renderPrint( sessionInfo() )
 
      output$downloadData <- downloadHandler(
               filename = function() {
@@ -94,6 +132,7 @@ ctxsearch = function() {
                 },  
               content = function(con) {
                 ans = lapply(input$keep, function(x) retrieve_doc(x, docs))
+                names(ans) = input$keep
                 saveRDS(ans, file=con)
                 }, contentType="application/octet-stream"
                )    

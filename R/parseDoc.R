@@ -4,7 +4,13 @@
 #' function, otherwise the instance is updated with new content
 #' @param rec_id_field character(1) field in CSV identifying records
 #' @param exclude_fields character vector of fields to ignore while parsing
-#' @param title character(1) document title
+#' @param substrings_to_omit character vector of strings to remove from candidate keywords via gsub
+#' @param patterns_to_kill character(1) regexp that identifies tokens to be omitted from keyword set
+#' @param token_fixups a list if character(2) vectors that will be 
+#' @param max_tok_nchar numeric(1) defaults to 25, tokens with more characters will be truncated to this length and suffixed with ellipsis
+#' used with gsub() to repair irregularities.  For 
+#' example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`
+#' @param doctitle character(1) document title
 #' @param cleanFields list of regular expressions identifying fields to ignre
 #' @return instance of DocSet
 #' @examples
@@ -13,12 +19,16 @@
 #' alld = ls(docs2kw(myob))
 #' r1 = retrieve_doc(alld[1], myob)
 #' expo = write.csv(r1, paste0(td, "/expo.csv"))
-#' parseDoc(paste0(td, "/expo.csv"), title=ssrch::titles68[alld[1]])
+#' parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]])
 #' @export
-parseDoc = function(csv, DocSetInstance=NULL, 
+parseDoc = function(csv, DocSetInstance=new("DocSet"),
+    doctitle = NA_character_,
     rec_id_field = "experiment.accession",
     exclude_fields = c("study.accession"),
-    title = NA_character_,
+    substrings_to_omit = c("http://purl.obolibrary.org/obo/"),
+    patterns_to_kill = "....-..-..|.*...,...",
+    token_fixups = list(c("t''", "t'"), c(":$", "")),
+    max_tok_nchar = 25,
     cleanFields = list("..*id$", ".name$", "_name$", "checksum",
        "isolate", "filename", "^ID$", "barcode", "Sample.Name")) {
 stopifnot(length(csv)==1, is.atomic(csv))
@@ -26,15 +36,11 @@ stopifnot(length(csv)==1, is.atomic(csv))
 # set up 3 environments: 
 # record to keyword, doc to records, doc to keyword
 #
- if (is.null(DocSetInstance)) {
-   DocSetInstance = new("DocSet",
-      kw2docs = new.env(hash=TRUE),
-      docs2recs = new.env(hash=TRUE),
-      docs2kw = new.env(hash=TRUE),
-      titles=title,
-      doc_retriever = function() NULL)
-   }  # or start by augmenting title set
-   else DocSetInstance@titles = c(DocSetInstance@titles, title)
+   #start by augmenting title set
+#   curti = slot(DocSetInstance, "titles")
+#   upd = c(curti, doctitle)
+#   names(upd)[length(upd)] = gsub(".csv", "", csv)
+#   slot(DocSetInstance, "titles") = upd
 #
 # import CSV check that rec_id_field is present
 #
@@ -77,7 +83,7 @@ docname = gsub(".csv", "", csv)
  bad = which(nc==0)
  if (length(bad)>0) allstr=allstr[-bad]
 # clean out dates and numbers with commas
- cln = function(x) { dr = grep("....-..-..|.*...,...", x); if (length(dr)>0) x = x[-dr]; x }
+ cln = function(x) { dr = grep(patterns_to_kill, x); if (length(dr)>0) x = x[-dr]; x }
  allstr = cln(allstr)
 #
 # some columns are numeric data.  we will not be searching for numeric constants
@@ -89,18 +95,29 @@ docname = gsub(".csv", "", csv)
  dat = dat[,-c(1,2)]
  alltok = setdiff(unlist(strsplit(allstr, " ")), docset_identifiers)
  alltok = setdiff(alltok, stopWords)
+# if (length(substrings_to_omit)>0) 
+#  alltok = unlist(lapply(substrings_to_omit, function(x)
+#     gsub(x, "", alltok)))
+ suppressWarnings({
+  tn = as.numeric(alltok)
+  numinds = which(!is.na(tn))
+  if (length(numinds)>0) alltok = alltok[-numinds]
+ })
 #
 # title handling
 #
- titleTokens = setdiff(strsplit(title, " ")[[1]], stopWords)
- alltok = c(alltok, titleTokens)
- if (any(is.na(alltok))) alltok = alltok[-which(is.na(alltok))]
- nc = nchar(alltok)
- bad = which(nc==0)
- if (length(bad)>0) alltok=alltok[-bad]
- suppressWarnings({ isnum <- which(!is.na(as.numeric(alltok))) })
- if (length(isnum)>0) alltok = alltok[-isnum]
- alltok = cln(alltok)
+ if (!is.na(doctitle)) {
+  titleTokens = setdiff(strsplit(doctitle, " ")[[1]], stopWords)
+  alltok = c(alltok, titleTokens)
+  if (any(is.na(alltok))) alltok = alltok[-which(is.na(alltok))]
+  nc = nchar(alltok)
+  bad = which(nc==0)
+  if (length(bad)>0) alltok=alltok[-bad]
+  suppressWarnings({ isnum <- which(!is.na(as.numeric(alltok))) })
+  if (length(isnum)>0) alltok = alltok[-isnum]
+  alltok = cln(alltok)
+  alltok = cln(alltok)  # try again in case some multihits
+ }
 #
 # when we contribute to an environment we first check that our
 # current key is not present, if it is, we just c() new material
@@ -112,7 +129,19 @@ docname = gsub(".csv", "", csv)
 #      kw2docs = new.env(hash=TRUE),
 #      docs2recs = new.env(hash=TRUE),
 #
- vals = unique(c(allstr, alltok))
+ vals = cln(unique(c(allstr, alltok)))
+ if (length(token_fixups)>0) {
+  for (fu in token_fixups) {
+    vals = unique(gsub(fu[1], fu[2], vals))
+    }
+  }
+ if (length(substrings_to_omit)>0) 
+  vals = unlist(lapply(substrings_to_omit, function(x)
+     gsub(x, "", vals)))
+ vlen = nchar(vals)
+ lv = which(vlen>max_tok_nchar)
+ if (length(lv)>0)
+  vals[lv] = paste0(substr(vals[lv], 1, max_tok_nchar), "...")
  curDocs2kw = try(get(docname, env=docs2kw(DocSetInstance)), silent=TRUE)
  if (inherits(curDocs2kw, "try-error")) curDocs2kw=NULL
  assign(docname, c(curDocs2kw, vals), env=docs2kw(DocSetInstance))
@@ -120,6 +149,8 @@ docname = gsub(".csv", "", csv)
 # step 2 -- kw2docs
  curKw = intersect(vals, ls(envir=kw2docs(DocSetInstance)))
  newkeys = setdiff(vals, curKw)
+ badk = which(nchar(newkeys)==0)
+ if (length(badk)>0) newkeys = newkeys[-badk]
  for (k in curKw) assign(k, unique(c(
            get(k, envir=kw2docs(DocSetInstance)), docname)), 
             envir=kw2docs(DocSetInstance))

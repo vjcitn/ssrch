@@ -23,6 +23,11 @@ instance of DocSet
 \description{
 constructor for DocSet
 }
+\note{
+Titles must be bound in post-hoc.  parseDoc produces
+data including parsed titles but does not bind the title into
+the resulting object.
+}
 \examples{
 getClass("DocSet")
 }

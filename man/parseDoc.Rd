@@ -4,9 +4,12 @@
 \alias{parseDoc}
 \title{parse a document and place content in a DocSet}
 \usage{
-parseDoc(csv, DocSetInstance = NULL,
+parseDoc(csv, DocSetInstance = new("DocSet"), doctitle = NA_character_,
   rec_id_field = "experiment.accession",
-  exclude_fields = c("study.accession"), title = NA_character_,
+  exclude_fields = c("study.accession"),
+  substrings_to_omit = c("http://purl.obolibrary.org/obo/"),
+  patterns_to_kill = "....-..-..|.*...,...",
+  token_fixups = list(c("t''", "t'"), c(":$", "")), max_tok_nchar = 25,
   cleanFields = list("..*id$", ".name$", "_name$", "checksum", "isolate",
   "filename", "^ID$", "barcode", "Sample.Name"))
 }
@@ -16,11 +19,21 @@ parseDoc(csv, DocSetInstance = NULL,
 \item{DocSetInstance}{if NULL, DocSet is initialized in this
 function, otherwise the instance is updated with new content}
 
+\item{doctitle}{character(1) document title}
+
 \item{rec_id_field}{character(1) field in CSV identifying records}
 
 \item{exclude_fields}{character vector of fields to ignore while parsing}
 
-\item{title}{character(1) document title}
+\item{substrings_to_omit}{character vector of strings to remove from candidate keywords via gsub}
+
+\item{patterns_to_kill}{character(1) regexp that identifies tokens to be omitted from keyword set}
+
+\item{token_fixups}{a list if character(2) vectors that will be}
+
+\item{max_tok_nchar}{numeric(1) defaults to 25, tokens with more characters will be truncated to this length and suffixed with ellipsis
+used with gsub() to repair irregularities.  For 
+example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`}
 
 \item{cleanFields}{list of regular expressions identifying fields to ignre}
 }
@@ -36,5 +49,5 @@ td = tempdir()
 alld = ls(docs2kw(myob))
 r1 = retrieve_doc(alld[1], myob)
 expo = write.csv(r1, paste0(td, "/expo.csv"))
-parseDoc(paste0(td, "/expo.csv"), title=ssrch::titles68[alld[1]])
+parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]])
 }
