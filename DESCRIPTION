@@ -1,7 +1,7 @@
 Package: ssrch
 Title: a simple search engine
 Description: Demonstrate tokenization and a search gadget for collections of CSV files.
-Version: 0.99.3
+Version: 0.99.4
 Author: Vince Carey
 Suggests: knitr, DT, testthat
 Depends: R (>= 3.6), methods
