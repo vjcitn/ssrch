@@ -1,5 +1,6 @@
 #' interactive app for ssrch DocSet instances
 #' @import shiny
+#' @importFrom DT datatable
 #' @param docset an instance of DocSet
 #' @return Simply starts an app.
 #' @examples
@@ -12,9 +13,9 @@
 #' }
 #' @export
 docset_searchapp = function(docset) {
- docs = docset # ssrch::docset_cancer68
- titles = slot(docset, "titles") # ssrch::docset_cancer68@titles
- urls = slot(docset, "urls") 
+ docs = docset 
+ titles = slot(docset, "titles")
+ urls = slot(docset, "urls") # may be empty
 #
 # order keywords so that those with alphabetic prefix
 # precede those with special characters or numbers
@@ -42,6 +43,7 @@ docset_searchapp = function(docset) {
     downloadButton("downloadData", "download list of data.frames"),
     actionButton("cleartabs", "Clear tabs."),
     actionButton("cleartitles", "Clear titles."),
+#    actionButton("clearcart", "Clear cart."),
     actionButton("stopBtn", "Stop app."),
            width=3
     ),
@@ -50,7 +52,7 @@ docset_searchapp = function(docset) {
     helpText("Click on tab to see sample.attributes for all experiments in the study, derived with SRAdbV2"),
     tabsetPanel(id="tabs",
      tabPanel("titles", target="titles",
-      dataTableOutput("titleTable")
+      DT::dataTableOutput("titleTable")
      ),
      tabPanel("about",
       helpText("This app demonstrates an approach to supporting full text search over genomic metadata recorded in the NCBI SRA."),
@@ -79,7 +81,6 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
 #
 # render a table of titles of selected documents
 #
-#  output$titleTable = renderDataTable({
   buildTitleTable = reactive({
    z = searchDocs(input$main, docs, ignore.case=TRUE)
    if (nrow(z)>1 && sum(dd <- duplicated(z$docs))>0) {
@@ -108,9 +109,14 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
       insertTab("tabs", tabPanel(x, {
         renderDataTable(retrieve_doc(x, docs))}, id=x),
         target="titles", position="after")})
-    accumTokens <<- c(accumTokens, accumtitles$docs)
-    output$titleTable = renderDataTable( buildTitleTable(), escape=FALSE )
+    output$titleTable = DT::renderDataTable( 
+              datatable(buildTitleTable(), escape=FALSE ))
     })
+  observeEvent(input$titleTable_rows_selected, {
+       newt = accumtitles$docs[ input$titleTable_rows_selected ]      
+       accumTokens <<- unique(c(accumTokens, newt))
+       updateSelectInput(session, "keep", selected=accumTokens)
+       })
   observeEvent(input$cleartabs, {
     showNotification("After clearing you must change the query string or displays will not update.")
     for (i in tabStack) removeTab("tabs", target=i) 
@@ -121,12 +127,11 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
     accumtitles <<- NULL
     output$titleTable = renderDataTable( data.frame() ) #buildTitleTable() )
     })
-
-#  observeEvent(input$main, {
-#    accumTokens <<- c(accumTokens, accumtitles$docs)
-#    output$newnew = renderUI(selectInput("keep", "keep",
-#        choices=accumTokens, selected=accumTokens, multiple=TRUE))
+#  observeEvent(input$clearcart, {
+#    accumTokens <<- NULL
+#    updateSelectInput(session, "keep", selected=NULL)
 #    })
+
      observeEvent(input$stopBtn, {
        ans = NULL
        if (length(input$keep)>0) {

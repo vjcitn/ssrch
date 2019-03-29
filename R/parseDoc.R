@@ -1,4 +1,5 @@
 #' parse a document and place content in a DocSet
+#' @importFrom utils head read.csv sessionInfo 
 #' @param csv a character(1) CSV file path
 #' @param DocSetInstance if NULL, DocSet is initialized in this
 #' function, otherwise the instance is updated with new content
@@ -142,9 +143,9 @@ docname = gsub(".csv", "", csv)
  lv = which(vlen>max_tok_nchar)
  if (length(lv)>0)
   vals[lv] = paste0(substr(vals[lv], 1, max_tok_nchar), "...")
- curDocs2kw = try(get(docname, env=docs2kw(DocSetInstance)), silent=TRUE)
+ curDocs2kw = try(get(docname, envir=docs2kw(DocSetInstance)), silent=TRUE)
  if (inherits(curDocs2kw, "try-error")) curDocs2kw=NULL
- assign(docname, c(curDocs2kw, vals), env=docs2kw(DocSetInstance))
+ assign(docname, c(curDocs2kw, vals), envir=docs2kw(DocSetInstance))
 #
 # step 2 -- kw2docs
  curKw = intersect(vals, ls(envir=kw2docs(DocSetInstance)))
