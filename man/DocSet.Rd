@@ -4,7 +4,7 @@
 \alias{DocSet}
 \title{constructor for DocSet}
 \usage{
-DocSet(kw2docs, docs2recs, docs2kw, titles, doc_retriever)
+DocSet(kw2docs, docs2recs, docs2kw, titles, urls, doc_retriever)
 }
 \arguments{
 \item{kw2docs}{an environment mapping keywords to documents}
@@ -14,6 +14,8 @@ DocSet(kw2docs, docs2recs, docs2kw, titles, doc_retriever)
 \item{docs2kw}{an environment mapping documents to keywords}
 
 \item{titles}{a named character vector with titles; names are document identifiers}
+
+\item{urls}{a named character vector with document-associated URLs; names are document identifiers}
 
 \item{doc_retriever}{a function that, given a document identifier, will produce the document}
 }

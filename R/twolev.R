@@ -9,6 +9,7 @@ setClass("DocSet", representation(
   docs2recs = "environment",
   docs2kw = "environment",
   titles = "character",
+  urls = "character",
   doc_retriever = "function"))
 
 #' constructor for DocSet
@@ -16,6 +17,7 @@ setClass("DocSet", representation(
 #' @param docs2recs an environment mapping document identifiers to records
 #' @param docs2kw an environment mapping documents to keywords
 #' @param titles a named character vector with titles; names are document identifiers
+#' @param urls a named character vector with document-associated URLs; names are document identifiers
 #' @param doc_retriever a function that, given a document identifier, will produce the document
 #' @return instance of DocSet
 #' @note Titles must be bound in post-hoc.  parseDoc produces
@@ -24,12 +26,13 @@ setClass("DocSet", representation(
 #' @examples
 #' getClass("DocSet")
 #' @export
-DocSet = function(kw2docs, docs2recs, docs2kw, titles, doc_retriever) {
+DocSet = function(kw2docs, docs2recs, docs2kw, titles, urls, doc_retriever) {
  new("DocSet", 
   kw2docs = kw2docs,
   docs2recs = docs2recs,
   docs2kw = docs2kw,
   titles = titles,
+  urls = urls,
   doc_retriever = doc_retriever)
 }
 

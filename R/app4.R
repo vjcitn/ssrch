@@ -14,6 +14,7 @@
 docset_searchapp = function(docset) {
  docs = docset # ssrch::docset_cancer68
  titles = slot(docset, "titles") # ssrch::docset_cancer68@titles
+ urls = slot(docset, "urls") 
 #
 # order keywords so that those with alphabetic prefix
 # precede those with special characters or numbers
@@ -91,6 +92,9 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
    else accumtitles <<- rbind(accumtitles, cbind(z, title=titles[z$docs]))
    d = which(duplicated(accumtitles$docs))
    if (length(d)>0) accumtitles <<- accumtitles[-d,]
+   mkl = function(x) sprintf("<a href=%s>%s</a>",x,gsub(".*=", "", x))
+   if (length(urls)>0) accumtitles = cbind(pmid=mkl(urls[accumtitles$docs]),
+     accumtitles)
    accumtitles
   })
 #
@@ -105,7 +109,7 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
         renderDataTable(retrieve_doc(x, docs))}, id=x),
         target="titles", position="after")})
     accumTokens <<- c(accumTokens, accumtitles$docs)
-    output$titleTable = renderDataTable( buildTitleTable() )
+    output$titleTable = renderDataTable( buildTitleTable(), escape=FALSE )
     })
   observeEvent(input$cleartabs, {
     showNotification("After clearing you must change the query string or displays will not update.")
