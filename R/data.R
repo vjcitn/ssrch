@@ -6,4 +6,8 @@
 #' @docType data
 #' @format character vector
 "titles68"
+#' pubmed URLs for subset of 68 cancer studies
+#' @docType data
+#' @format character vector
+"urls68"
 
