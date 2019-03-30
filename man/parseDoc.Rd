@@ -10,8 +10,8 @@ parseDoc(csv, DocSetInstance = new("DocSet"), doctitle = NA_character_,
   substrings_to_omit = c("http://purl.obolibrary.org/obo/"),
   patterns_to_kill = "....-..-..|.*...,...",
   token_fixups = list(c("t''", "t'"), c(":$", "")), max_tok_nchar = 25,
-  cleanFields = list("..*id$", ".name$", "_name$", "checksum", "isolate",
-  "filename", "^ID$", "barcode", "Sample.Name"))
+  min_tok_nchar = 4, cleanFields = list("..*id$", ".name$", "_name$",
+  "checksum", "isolate", "filename", "^ID$", "barcode", "Sample.Name"))
 }
 \arguments{
 \item{csv}{a character(1) CSV file path}
@@ -31,7 +31,9 @@ function, otherwise the instance is updated with new content}
 
 \item{token_fixups}{a list if character(2) vectors that will be}
 
-\item{max_tok_nchar}{numeric(1) defaults to 25, tokens with more characters will be truncated to this length and suffixed with ellipsis
+\item{max_tok_nchar}{numeric(1) defaults to 25, tokens with more characters will be truncated to this length and suffixed with ellipsis}
+
+\item{min_tok_nchar}{numeric(1) defaults to 4, tokens shorter than this are not in index
 used with gsub() to repair irregularities.  For 
 example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`}
 

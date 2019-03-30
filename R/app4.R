@@ -2,7 +2,15 @@
 #' @import shiny
 #' @importFrom DT datatable
 #' @param docset an instance of DocSet
-#' @return Simply starts an app.
+#' @param se (defaults to NULL) an instance of SummarizedExperiment; samples will be filtered by selection method prescribed in sefilter
+#' @param sefilter a function accepting (se, ...) and returning a SummarizedExperiment
+#' @note The handling of SummarizedExperiments by this app is specialized.
+#' The `sefilter` for the cancer example would be
+#' `function(se, y) se[,which(se$study_accession %in% y]` and it
+#' will be called with `y` bound to the study accession numbers selected in the app.
+#' @return Returns list of data.frames of metadata on studies requested.  Can
+#' provide a SummarizedExperiment download when `se` is non-null, but this
+#' is not yet returned to the session.
 #' @examples
 #' if (interactive()) {
 #'   oask = options()$example.ask
@@ -12,7 +20,8 @@
 #'   options(example.ask=oask)
 #' }
 #' @export
-docset_searchapp = function(docset) {
+docset_searchapp = function(docset, se=NULL, 
+    sefilter=function(se, ...)se) {
  docs = docset 
  titles = slot(docset, "titles")
  urls = slot(docset, "urls") # may be empty
@@ -26,6 +35,8 @@ docset_searchapp = function(docset) {
  preferred = grep("[A-Za-z]", ini)
  spec = setdiff(fullinds, preferred)
  allkw = allkw[c(preferred, spec)]
+ dlmessage = ifelse(is.null(se), "download list of data.frames",
+       "download SE")
 #
 # done
 #
@@ -40,7 +51,7 @@ docset_searchapp = function(docset) {
      choices = allkw, selected="Triple"),
     selectInput("keep", "Select study accession numbers for metadata retrieval",
         choices=names(titles), multiple=TRUE),
-    downloadButton("downloadData", "download list of data.frames"),
+    downloadButton("downloadData", dlmessage),
     actionButton("cleartabs", "Clear tabs."),
     actionButton("cleartitles", "Clear titles."),
 #    actionButton("clearcart", "Clear cart."),
@@ -96,6 +107,8 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
    mkl = function(x) sprintf("<a href=%s>%s</a>",x,gsub(".*=", "", x))
    if (length(urls)>0) accumtitles = cbind(pmid=mkl(urls[accumtitles$docs]),
      accumtitles)
+   rownames(accumtitles) = NULL
+   names(accumtitles)[3] = "study"
    accumtitles
   })
 #
@@ -125,7 +138,7 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
   observeEvent(input$cleartitles, {
     showNotification("After clearing you must change the query string or displays will not update.")
     accumtitles <<- NULL
-    output$titleTable = renderDataTable( data.frame() ) #buildTitleTable() )
+    output$titleTable = DT::renderDataTable( datatable(data.frame()) ) #buildTitleTable() )
     })
 #  observeEvent(input$clearcart, {
 #    accumTokens <<- NULL
@@ -144,11 +157,18 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
 
      output$downloadData <- downloadHandler(
               filename = function() {
-                paste('listOfDFs-', Sys.Date(), '.rds', sep='')
+                msg = ifelse(is.null(se), "listOfDFs-", "SE-")
+                paste(msg, Sys.Date(), '.rds', sep='')
                 },  
               content = function(con) {
-                ans = lapply(input$keep, function(x) retrieve_doc(x, docs))
-                names(ans) = input$keep
+                md = lapply(input$keep, function(x) retrieve_doc(x, docs))
+                names(md) = input$keep
+                if (is.null(se)) {
+                   ans = md
+                   } else {
+                   ans = sefilter(se, input$keep)
+                   metadata(ans) = c(metadata(ans), md)
+                   }
                 saveRDS(ans, file=con)
                 }, contentType="application/octet-stream"
                )    

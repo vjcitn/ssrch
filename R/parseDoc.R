@@ -9,6 +9,7 @@
 #' @param patterns_to_kill character(1) regexp that identifies tokens to be omitted from keyword set
 #' @param token_fixups a list if character(2) vectors that will be 
 #' @param max_tok_nchar numeric(1) defaults to 25, tokens with more characters will be truncated to this length and suffixed with ellipsis
+#' @param min_tok_nchar numeric(1) defaults to 4, tokens shorter than this are not in index
 #' used with gsub() to repair irregularities.  For 
 #' example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`
 #' @param doctitle character(1) document title
@@ -30,6 +31,7 @@ parseDoc = function(csv, DocSetInstance=new("DocSet"),
     patterns_to_kill = "....-..-..|.*...,...",
     token_fixups = list(c("t''", "t'"), c(":$", "")),
     max_tok_nchar = 25,
+    min_tok_nchar = 4,
     cleanFields = list("..*id$", ".name$", "_name$", "checksum",
        "isolate", "filename", "^ID$", "barcode", "Sample.Name")) {
 stopifnot(length(csv)==1, is.atomic(csv))
@@ -140,9 +142,12 @@ docname = gsub(".csv", "", csv)
   vals = unlist(lapply(substrings_to_omit, function(x)
      gsub(x, "", vals)))
  vlen = nchar(vals)
- lv = which(vlen>max_tok_nchar)
+ lv = which(vlen > max_tok_nchar)
  if (length(lv)>0)
   vals[lv] = paste0(substr(vals[lv], 1, max_tok_nchar), "...")
+ short = which(vlen < min_tok_nchar)
+ if (length(short)>0)
+  vals = vals[-short]
  curDocs2kw = try(get(docname, envir=docs2kw(DocSetInstance)), silent=TRUE)
  if (inherits(curDocs2kw, "try-error")) curDocs2kw=NULL
  assign(docname, c(curDocs2kw, vals), envir=docs2kw(DocSetInstance))

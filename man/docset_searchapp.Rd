@@ -4,16 +4,28 @@
 \alias{docset_searchapp}
 \title{interactive app for ssrch DocSet instances}
 \usage{
-docset_searchapp(docset)
+docset_searchapp(docset, se = NULL, sefilter = function(se, ...) se)
 }
 \arguments{
 \item{docset}{an instance of DocSet}
+
+\item{se}{(defaults to NULL) an instance of SummarizedExperiment; samples will be filtered by selection method prescribed in sefilter}
+
+\item{sefilter}{a function accepting (se, ...) and returning a SummarizedExperiment}
 }
 \value{
-Simply starts an app.
+Returns list of data.frames of metadata on studies requested.  Can
+provide a SummarizedExperiment download when `se` is non-null, but this
+is not yet returned to the session.
 }
 \description{
 interactive app for ssrch DocSet instances
+}
+\note{
+The handling of SummarizedExperiments by this app is specialized.
+The `sefilter` for the cancer example would be
+`function(se, y) se[,which(se$study_accession %in% y]` and it
+will be called with `y` bound to the study accession numbers selected in the app.
 }
 \examples{
 if (interactive()) {
