@@ -104,7 +104,7 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
    else accumtitles <<- rbind(accumtitles, cbind(z, title=titles[z$docs]))
    d = which(duplicated(accumtitles$docs))
    if (length(d)>0) accumtitles <<- accumtitles[-d,]
-   mkl = function(x) sprintf("<a href=%s>%s</a>",x,gsub(".*=", "", x))
+   mkl = function(x) sprintf("<a href=%s target='_blank'>%s</a>",x,gsub(".*=", "", x))
    if (length(urls)>0) accumtitles = cbind(pmid=mkl(urls[accumtitles$docs]),
      accumtitles)
    rownames(accumtitles) = NULL
