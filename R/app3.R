@@ -24,7 +24,7 @@ ctxsearch = function() {
 #
  allkw = sort(unique(ls(envir=kw2docs(docs))))
  ini = substr(allkw,1,1)
- fullinds = seq_len(length(allkw))
+ fullinds = seq_along(allkw)
  preferred = grep("[A-Za-z]", ini)
  spec = setdiff(fullinds, preferred)
  allkw = allkw[c(preferred, spec)]
@@ -87,7 +87,7 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
    if (nrow(z)>1 && sum(dd <- duplicated(z$docs))>0) {
       sz = split(z, z$docs)
       kp = sapply(sz, function(x) which.max(nchar(x$hits)))
-      for (i in seq_len(length(sz))) sz[[i]] = sz[[i]][kp[i],,drop=FALSE]
+      for (i in seq_along(sz)) sz[[i]] = sz[[i]][kp[i],,drop=FALSE]
       z = do.call(rbind, sz)
       }
    if (is.null(accumtitles)) accumtitles <<- cbind(z, title=titles[z$docs])

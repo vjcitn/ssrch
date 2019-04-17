@@ -37,7 +37,7 @@ function, otherwise the instance is updated with new content}
 used with gsub() to repair irregularities.  For 
 example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`}
 
-\item{cleanFields}{list of regular expressions identifying fields to ignre}
+\item{cleanFields}{list of regular expressions identifying fields to ignore}
 }
 \value{
 instance of DocSet

@@ -10,4 +10,8 @@
 #' @docType data
 #' @format character vector
 "urls68"
+#' publication dates for 6000 SRA transcriptome studies
+#' @docType data
+#' @format data.frame
+"study_publ_dates"
 

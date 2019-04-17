@@ -13,7 +13,7 @@
 #' used with gsub() to repair irregularities.  For 
 #' example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`
 #' @param doctitle character(1) document title
-#' @param cleanFields list of regular expressions identifying fields to ignre
+#' @param cleanFields list of regular expressions identifying fields to ignore
 #' @return instance of DocSet
 #' @examples
 #' myob = ssrch::docset_cancer68
