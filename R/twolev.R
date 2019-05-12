@@ -26,7 +26,9 @@ setClass("DocSet", representation(
 #' @examples
 #' getClass("DocSet")
 #' @export
-DocSet = function(kw2docs, docs2recs, docs2kw, titles, urls, doc_retriever) {
+DocSet = function(kw2docs = new.env(hash=TRUE), 
+   docs2recs=new.env(hash=TRUE), docs2kw=new.env(hash=TRUE), 
+   titles=character(), urls=character(), doc_retriever=function(...) NULL) {
  new("DocSet", 
   kw2docs = kw2docs,
   docs2recs = docs2recs,

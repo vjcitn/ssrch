@@ -1,7 +1,7 @@
 #' parse a document and place content in a DocSet
 #' @importFrom utils head read.csv sessionInfo 
 #' @param csv a character(1) CSV file path
-#' @param DocSetInstance if NULL, DocSet is initialized in this
+#' @param DocSetInstance if missing, DocSet is initialized in this
 #' function, otherwise the instance is updated with new content
 #' @param rec_id_field character(1) field in CSV identifying records
 #' @param exclude_fields character vector of fields to ignore while parsing
@@ -15,6 +15,10 @@
 #' @param doctitle character(1) document title
 #' @param cleanFields list of regular expressions identifying fields to ignore
 #' @return instance of DocSet
+#' @note The expected use case has `DocSetInstance` being updated in a loop.
+#' Sharing of environments across multiple DocSetInstances can occur and unexpected
+#' behaviors may ensue.  Note also that many of the parameter defaults to parseDoc are
+#' for the use case of processing SRA metadata.
 #' @examples
 #' myob = ssrch::docset_cancer68
 #' td = tempdir()
@@ -40,10 +44,13 @@ stopifnot(length(csv)==1, is.atomic(csv))
 # record to keyword, doc to records, doc to keyword
 #
    #start by augmenting title set
-#   curti = slot(DocSetInstance, "titles")
-#   upd = c(curti, doctitle)
-#   names(upd)[length(upd)] = gsub(".csv", "", csv)
-#   slot(DocSetInstance, "titles") = upd
+#
+# was absent may 12 2019
+#
+   curti = slot(DocSetInstance, "titles")
+   upd = c(curti, doctitle)
+   names(upd)[length(upd)] = gsub(".csv", "", csv)
+   slot(DocSetInstance, "titles") = upd
 #
 # import CSV check that rec_id_field is present
 #
@@ -95,7 +102,7 @@ docname = gsub(".csv", "", csv)
  suppressWarnings({isnum <- which(!is.na(as.numeric(allstr)))})
  if (length(isnum)>0) allstr = allstr[-isnum]
 #
- dat = dat[,-c(1,2)]
+# dat = dat[,-c(1,2)]  # present may 12 2019 ... seems presumptive
  alltok = setdiff(unlist(strsplit(allstr, " ")), docset_identifiers)
  alltok = setdiff(alltok, stopWords)
 # if (length(substrings_to_omit)>0) 

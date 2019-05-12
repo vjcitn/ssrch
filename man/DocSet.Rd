@@ -4,7 +4,9 @@
 \alias{DocSet}
 \title{constructor for DocSet}
 \usage{
-DocSet(kw2docs, docs2recs, docs2kw, titles, urls, doc_retriever)
+DocSet(kw2docs = new.env(hash = TRUE), docs2recs = new.env(hash =
+  TRUE), docs2kw = new.env(hash = TRUE), titles = character(),
+  urls = character(), doc_retriever = function(...) NULL)
 }
 \arguments{
 \item{kw2docs}{an environment mapping keywords to documents}

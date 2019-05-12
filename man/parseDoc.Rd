@@ -16,7 +16,7 @@ parseDoc(csv, DocSetInstance = new("DocSet"), doctitle = NA_character_,
 \arguments{
 \item{csv}{a character(1) CSV file path}
 
-\item{DocSetInstance}{if NULL, DocSet is initialized in this
+\item{DocSetInstance}{if missing, DocSet is initialized in this
 function, otherwise the instance is updated with new content}
 
 \item{doctitle}{character(1) document title}
@@ -44,6 +44,12 @@ instance of DocSet
 }
 \description{
 parse a document and place content in a DocSet
+}
+\note{
+The expected use case has `DocSetInstance` being updated in a loop.
+Sharing of environments across multiple DocSetInstances can occur and unexpected
+behaviors may ensue.  Note also that many of the parameter defaults to parseDoc are
+for the use case of processing SRA metadata.
 }
 \examples{
 myob = ssrch::docset_cancer68
