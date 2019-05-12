@@ -28,7 +28,8 @@ test_that("can update a DocSet in various ways", {
  expo = write.csv(r1, paste0(td, "/expo.csv"))
  expo2 = write.csv(r1, paste0(td, "/expo2.csv"))
  ds2 = parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]])
- expect_true(length(ls(envir=kw2docs(ds2)))==349)
+ print(length(ls(envir=kw2docs(ds2))))
+ expect_true(length(ls(envir=kw2docs(ds2)))==350)
  expect_true(length(slot(ds2, "titles"))==1)
  # now test that content in ds2 is updated to a new DocSet with a second parseDoc call
  ds3 = parseDoc(paste0(td, "/expo2.csv"), DocSetInstance=ds2, doctitle="test")

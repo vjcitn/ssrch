@@ -140,6 +140,7 @@ docname = gsub(".csv", "", csv)
 #      docs2recs = new.env(hash=TRUE),
 #
  vals = cln(unique(c(allstr, alltok)))
+ if (!is.na(doctitle)) vals = c(vals, doctitle)
  if (length(token_fixups)>0) {
   for (fu in token_fixups) {
     vals = unique(gsub(fu[1], fu[2], vals))
