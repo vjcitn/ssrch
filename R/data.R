@@ -14,4 +14,11 @@
 #' @docType data
 #' @format data.frame
 "study_publ_dates"
+#' DocSet instance with metadata from 1009 cancer studies
+#' @docType data
+#' @format S4 class DocSet defined in ssrch
+#' @note This is part of a sequence of datasets assessing how
+#' far we can go with environments of keywords.  Annotation for
+#' 43000 samples is indexed here.
+"ds_can1009b"
 

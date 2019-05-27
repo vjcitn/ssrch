@@ -5,7 +5,7 @@
 \title{parse a document and place content in a DocSet}
 \usage{
 parseDoc(csv, DocSetInstance = new("DocSet"), doctitle = NA_character_,
-  rec_id_field = "experiment.accession",
+  docabst = NA_character_, rec_id_field = "experiment.accession",
   exclude_fields = c("study.accession"),
   substrings_to_omit = c("http://purl.obolibrary.org/obo/"),
   patterns_to_kill = "....-..-..|.*...,...",
@@ -20,6 +20,8 @@ parseDoc(csv, DocSetInstance = new("DocSet"), doctitle = NA_character_,
 function, otherwise the instance is updated with new content}
 
 \item{doctitle}{character(1) document title}
+
+\item{docabst}{character(1) a string: the document abstract}
 
 \item{rec_id_field}{character(1) field in CSV identifying records}
 
@@ -57,5 +59,9 @@ td = tempdir()
 alld = ls(docs2kw(myob))
 r1 = retrieve_doc(alld[1], myob)
 expo = write.csv(r1, paste0(td, "/expo.csv"))
-parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]])
+pd = parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]],
+    docabst="qwerty")
+pd
+searchDocs("quer", pd) # query will fail
+searchDocs("qwer", pd) # should succeed
 }

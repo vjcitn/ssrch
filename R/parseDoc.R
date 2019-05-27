@@ -13,6 +13,7 @@
 #' used with gsub() to repair irregularities.  For 
 #' example `c("t''", "t'")` will transform `Burkitt''s` to `Burkitt's`
 #' @param doctitle character(1) document title
+#' @param docabst character(1) a string: the document abstract
 #' @param cleanFields list of regular expressions identifying fields to ignore
 #' @return instance of DocSet
 #' @note The expected use case has `DocSetInstance` being updated in a loop.
@@ -25,10 +26,15 @@
 #' alld = ls(docs2kw(myob))
 #' r1 = retrieve_doc(alld[1], myob)
 #' expo = write.csv(r1, paste0(td, "/expo.csv"))
-#' parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]])
+#' pd = parseDoc(paste0(td, "/expo.csv"), doctitle=ssrch::titles68[alld[1]],
+#'     docabst="qwerty")
+#' pd
+#' searchDocs("quer", pd) # query will fail
+#' searchDocs("qwer", pd) # should succeed
 #' @export
 parseDoc = function(csv, DocSetInstance=new("DocSet"),
     doctitle = NA_character_,
+    docabst = NA_character_,
     rec_id_field = "experiment.accession",
     exclude_fields = c("study.accession"),
     substrings_to_omit = c("http://purl.obolibrary.org/obo/"),
@@ -118,6 +124,22 @@ docname = gsub(".csv", "", csv)
 #
  if (!is.na(doctitle)) {
   titleTokens = setdiff(strsplit(doctitle, " ")[[1]], stopWords)
+  alltok = c(alltok, titleTokens)
+  if (any(is.na(alltok))) alltok = alltok[-which(is.na(alltok))]
+  nc = nchar(alltok)
+  bad = which(nc==0)
+  if (length(bad)>0) alltok=alltok[-bad]
+  suppressWarnings({ isnum <- which(!is.na(as.numeric(alltok))) })
+  if (length(isnum)>0) alltok = alltok[-isnum]
+  alltok = cln(alltok)
+  alltok = cln(alltok)  # try again in case some multihits
+ }
+#
+# abstract handling -- tokens are obtained and added
+# as keywords
+#
+ if (!is.na(docabst)) {
+  titleTokens = setdiff(strsplit(docabst, " ")[[1]], stopWords)
   alltok = c(alltok, titleTokens)
   if (any(is.na(alltok))) alltok = alltok[-which(is.na(alltok))]
   nc = nchar(alltok)

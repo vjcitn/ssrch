@@ -16,13 +16,13 @@
 #' }
 #' @export
 ctxsearch = function() {
- docs = ssrch::docset_cancer68
+ cur_docset = ssrch::docset_cancer68
  titles = ssrch::docset_cancer68@titles
 #
 # order keywords so that those with alphabetic prefix
 # precede those with special characters or numbers
 #
- allkw = sort(unique(ls(envir=kw2docs(docs))))
+ allkw = sort(unique(ls(envir=kw2docs(cur_docset))))
  ini = substr(allkw,1,1)
  fullinds = seq_along(allkw)
  preferred = grep("[A-Za-z]", ini)
@@ -70,20 +70,20 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
  )
 
  server = function(input, output, session) {
-  output$objdesc = renderPrint( docs )
+  output$objdesc = renderPrint( cur_docset )
 #
 # retrieve requested documents
 #
   getTabs = reactive({
-    z = searchDocs(input$main, docs, ignore.case=TRUE)
-    lapply(z$docs, function(x) retrieve_doc(x, docs))
+    z = searchDocs(input$main, cur_docset, ignore.case=TRUE)
+    lapply(z$docs, function(x) retrieve_doc(x, cur_docset))
     })
 #
 # render a table of titles of selected documents
 #
 #  output$titleTable = renderDataTable({
   buildTitleTable = reactive({
-   z = searchDocs(input$main, docs, ignore.case=TRUE)
+   z = searchDocs(input$main, cur_docset, ignore.case=TRUE)
    if (nrow(z)>1 && sum(dd <- duplicated(z$docs))>0) {
       sz = split(z, z$docs)
       kp = sapply(sz, function(x) which.max(nchar(x$hits)))
@@ -102,11 +102,11 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
   tabStack = NULL
   observeEvent(input$main, {
     output$titleTable = renderDataTable( buildTitleTable() )
-    z = searchDocs(input$main, docs, ignore.case=TRUE)
+    z = searchDocs(input$main, cur_docset, ignore.case=TRUE)
     lapply(rev(unique(z$docs)), function(x) {
       tabStack <<- c(tabStack, x)
       insertTab("tabs", tabPanel(x, {
-        renderDataTable(retrieve_doc(x, docs))}, id=x),
+        renderDataTable(retrieve_doc(x, cur_docset))}, id=x),
         target="titles", position="after")})
     accumTokens <<- c(accumTokens, accumtitles$docs)
     })
@@ -131,7 +131,7 @@ in March 2019 using the Omicidx system of Sean Davis of NCI."),
                 paste('listOfDFs-', Sys.Date(), '.rds', sep='')
                 },  
               content = function(con) {
-                ans = lapply(input$keep, function(x) retrieve_doc(x, docs))
+                ans = lapply(input$keep, function(x) retrieve_doc(x, cur_docset))
                 names(ans) = input$keep
                 saveRDS(ans, file=con)
                 }, contentType="application/octet-stream"
