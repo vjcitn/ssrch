@@ -1,9 +1,9 @@
-name: CI
+name: install_with_log
 
 on: [push]
 jobs:
   test1:
-    container: bioconductor/bioconductor_full:devel
+    container: vjcitn/vjcbbs_support:v1
     name: install with log
     runs-on: ubuntu-latest
     steps:
