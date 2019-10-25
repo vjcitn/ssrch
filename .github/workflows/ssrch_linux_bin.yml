@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: build and log bioc package from personal github 
         run: |
-          git clone https://github.com/vjcitn/ssrch.git
+          git clone git@github.com:vjcitn/ssrch.git
           R CMD build ssrch > ssrch_build.log.txt
       - name: get build log
         uses: actions/upload-artifact@v1
