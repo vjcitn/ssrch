@@ -1,0 +1,17 @@
+name: CI
+
+on: [push]
+jobs:
+  test1:
+    container: bioconductor/bioconductor_full:devel
+    name: install with log
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install and log bioc package from personal github
+      run: Rscript -e "BiocManager::install('remotes'); BiocManager::install('vjcitn/ssrch')" > ssrch_install.log.txt
+    - name: get install log
+      uses: actions/upload-artifact@v1
+      with:
+        name: install_log
+        path: ssrch_install.log.txt
