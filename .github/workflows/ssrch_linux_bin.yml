@@ -3,7 +3,7 @@ name: install_and_build_with_log
 on: [push]
 jobs:
   install1:
-    container: vjcitn/vjcbbs_support:v3
+    container: vjcitn/vjcbbs_support:v4
     name: install with log
     runs-on: ubuntu-latest
     steps:
@@ -16,7 +16,7 @@ jobs:
         name: install_log
         path: ssrch_install.log.txt
   build: 
-    container: vjcitn/vjcbbs_support:v3
+    container: vjcitn/vjcbbs_support:v4
     needs: install1
     name: build with log 
     runs-on: ubuntu-latest
