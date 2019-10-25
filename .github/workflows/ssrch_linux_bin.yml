@@ -1,17 +1,38 @@
-name: install_with_log
+name: install_and_build_with_log
 
 on: [push]
 jobs:
-  test1:
-    container: vjcitn/vjcbbs_support:v1
+  install1:
+    container: vjcitn/vjcbbs_support:v3
     name: install with log
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - name: install and log bioc package from personal github
-      run: Rscript -e "BiocManager::install('remotes'); BiocManager::install('vjcitn/ssrch')" > ssrch_install.log.txt
+      run: Rscript -e "BiocManager::install('vjcitn/ssrch')" > ssrch_install.log.txt
     - name: get install log
       uses: actions/upload-artifact@v1
       with:
         name: install_log
         path: ssrch_install.log.txt
+  build: 
+    container: vjcitn/vjcbbs_support:v3
+    needs: install1
+    name: build with log 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: build and log bioc package from personal github 
+      - run: |
+          git clone https://github.com/vjcitn/ssrch.git
+          R CMD build ssrch > ssrch_build.log.txt
+      - name: get build log
+        uses: actions/upload-artifact@v1
+        with:
+          name: build_log
+          path: ssrch_build.log.txt
+      - name: get tarball
+        uses: actions/checkout@v1
+        with: 
+          name: tarball
+          path: ssrch_1.1.7.tar.gz
