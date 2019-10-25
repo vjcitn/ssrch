@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: build and log bioc package from personal github 
-      - run: |
+        run: |
           git clone https://github.com/vjcitn/ssrch.git
           R CMD build ssrch > ssrch_build.log.txt
       - name: get build log
@@ -32,7 +32,7 @@ jobs:
           name: build_log
           path: ssrch_build.log.txt
       - name: get tarball
-        uses: actions/checkout@v1
+        uses: actions/upload-artifact@v1
         with: 
           name: tarball
           path: ssrch_1.1.7.tar.gz
